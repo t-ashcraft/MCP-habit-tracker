@@ -1,0 +1,23 @@
+{
+  "name": "mcp-habit-tracker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/t-ashcraft/MCP-habit-tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/t-ashcraft/MCP-habit-tracker/issues"
+  },
+  "homepage": "https://github.com/t-ashcraft/MCP-habit-tracker#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0"
+  }
+}
