@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Habit Tracker + Calendar</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Local-first tracker</p>
+          <h1>Habit Tracker + Calendar</h1>
+          <p class="subtitle">
+            Food, fitness, sleep, and studying habits with time-blocked events.
+          </p>
+        </div>
+        <div class="status" id="connectionStatus">
+          <div class="status-dot"></div>
+          <div>
+            <p class="status-title">MCP connection</p>
+            <p class="status-detail" id="connectionDetail">Checking...</p>
+          </div>
+        </div>
+      </header>
+
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="habits" role="tab">Habits</button>
+        <button class="tab" data-tab="calendar" role="tab">Calendar</button>
+      </nav>
+
+      <main>
+        <section class="panel active" id="habits" role="tabpanel">
+          <div class="grid two">
+            <div class="card">
+              <h2>Log a habit</h2>
+              <form id="habitForm" class="form">
+                <label>
+                  Category
+                  <select name="category" required>
+                    <option value="food">Food</option>
+                    <option value="fitness">Fitness</option>
+                    <option value="sleep">Sleep</option>
+                    <option value="studying">Studying</option>
+                  </select>
+                </label>
+                <label>
+                  Date
+                  <input type="date" name="date" required />
+                </label>
+                <label>
+                  Notes
+                  <textarea name="notes" rows="3" placeholder="How did it go?"></textarea>
+                </label>
+                <label>
+                  Metrics (JSON)
+                  <textarea
+                    name="metrics"
+                    rows="2"
+                    placeholder='{"calories": 450}'
+                  ></textarea>
+                </label>
+                <div class="form-actions">
+                  <button type="submit" class="primary">Save habit</button>
+                  <button type="button" class="ghost" id="habitCancel" hidden>
+                    Cancel edit
+                  </button>
+                </div>
+                <input type="hidden" name="id" />
+              </form>
+            </div>
+
+            <div class="card">
+              <h2>Daily habits</h2>
+              <div class="filters">
+                <label>
+                  Date
+                  <input type="date" id="habitDate" />
+                </label>
+                <label>
+                  Category
+                  <select id="habitCategory">
+                    <option value="">All</option>
+                    <option value="food">Food</option>
+                    <option value="fitness">Fitness</option>
+                    <option value="sleep">Sleep</option>
+                    <option value="studying">Studying</option>
+                  </select>
+                </label>
+                <button class="ghost" id="habitRefresh" type="button">Refresh</button>
+              </div>
+              <ul class="list" id="habitList"></ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="calendar" role="tabpanel">
+          <div class="grid two">
+            <div class="card">
+              <h2>Add an event</h2>
+              <form id="eventForm" class="form">
+                <label>
+                  Title
+                  <input type="text" name="title" required placeholder="Gym session" />
+                </label>
+                <label>
+                  Date
+                  <input type="date" name="date" required />
+                </label>
+                <div class="row">
+                  <label>
+                    Start time
+                    <input type="time" name="startTime" required />
+                  </label>
+                  <label>
+                    End time
+                    <input type="time" name="endTime" required />
+                  </label>
+                </div>
+                <label>
+                  Notes
+                  <textarea name="notes" rows="3"></textarea>
+                </label>
+                <div class="form-actions">
+                  <button type="submit" class="primary">Save event</button>
+                  <button type="button" class="ghost" id="eventCancel" hidden>
+                    Cancel edit
+                  </button>
+                </div>
+                <input type="hidden" name="id" />
+              </form>
+            </div>
+
+            <div class="card">
+              <h2>Event schedule</h2>
+              <div class="filters">
+                <label>
+                  Start date
+                  <input type="date" id="eventStart" />
+                </label>
+                <label>
+                  End date
+                  <input type="date" id="eventEnd" />
+                </label>
+                <button class="ghost" id="eventRefresh" type="button">Refresh</button>
+              </div>
+              <ul class="list" id="eventList"></ul>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

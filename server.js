@@ -1,11 +1,12 @@
-import { createServer } from "@modelcontextprotocol/sdk/server/index.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import fs from "fs/promises";
 import path from "path";
 import crypto from "crypto";
+import { z } from "zod";
 
 // Create server
-const server = createServer({
+const server = new McpServer({
   name: "habit-mcp-server",
   version: "1.0.0",
 });
@@ -77,9 +78,10 @@ await ensureDataDir();
 
 server.tool(
   "habits.list",
+  "List habit entries by date or category",
   {
-    date: "string",
-    category: "string",
+    date: z.string().optional(),
+    category: z.string().optional(),
   },
   async ({ date, category }) => {
     const habits = await readJsonFile(habitsFile);
@@ -100,11 +102,12 @@ server.tool(
 
 server.tool(
   "habits.create",
+  "Create a habit entry",
   {
-    category: "string",
-    date: "string",
-    notes: "string",
-    metrics: "object",
+    category: z.string(),
+    date: z.string(),
+    notes: z.string().optional(),
+    metrics: z.record(z.any()).optional(),
   },
   async ({ category, date, notes, metrics }) => {
     if (!validCategories.has(category)) {
@@ -132,12 +135,13 @@ server.tool(
 
 server.tool(
   "habits.update",
+  "Update a habit entry",
   {
-    id: "string",
-    category: "string",
-    date: "string",
-    notes: "string",
-    metrics: "object",
+    id: z.string(),
+    category: z.string().optional(),
+    date: z.string().optional(),
+    notes: z.string().optional(),
+    metrics: z.record(z.any()).optional(),
   },
   async ({ id, category, date, notes, metrics }) => {
     const habits = await readJsonFile(habitsFile);
@@ -169,8 +173,9 @@ server.tool(
 
 server.tool(
   "habits.delete",
+  "Delete a habit entry",
   {
-    id: "string",
+    id: z.string(),
   },
   async ({ id }) => {
     const habits = await readJsonFile(habitsFile);
@@ -187,9 +192,10 @@ server.tool(
 
 server.tool(
   "events.list",
+  "List calendar events by date range",
   {
-    startDate: "string",
-    endDate: "string",
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
   },
   async ({ startDate, endDate }) => {
     if (startDate && !isValidDate(startDate)) {
@@ -217,12 +223,13 @@ server.tool(
 
 server.tool(
   "events.create",
+  "Create a calendar event",
   {
-    title: "string",
-    date: "string",
-    startTime: "string",
-    endTime: "string",
-    notes: "string",
+    title: z.string(),
+    date: z.string(),
+    startTime: z.string(),
+    endTime: z.string(),
+    notes: z.string().optional(),
   },
   async ({ title, date, startTime, endTime, notes }) => {
     if (!title) {
@@ -254,13 +261,14 @@ server.tool(
 
 server.tool(
   "events.update",
+  "Update a calendar event",
   {
-    id: "string",
-    title: "string",
-    date: "string",
-    startTime: "string",
-    endTime: "string",
-    notes: "string",
+    id: z.string(),
+    title: z.string().optional(),
+    date: z.string().optional(),
+    startTime: z.string().optional(),
+    endTime: z.string().optional(),
+    notes: z.string().optional(),
   },
   async ({ id, title, date, startTime, endTime, notes }) => {
     const events = await readJsonFile(eventsFile);
@@ -296,8 +304,9 @@ server.tool(
 
 server.tool(
   "events.delete",
+  "Delete a calendar event",
   {
-    id: "string",
+    id: z.string(),
   },
   async ({ id }) => {
     const events = await readJsonFile(eventsFile);
