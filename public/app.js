@@ -32,6 +32,10 @@ let habitEditingId = null;
 let eventEditingId = null;
 
 const mcpClient = window.mcpClient || window.mcp;
+const bridgeStatus = {
+  mode: "unknown",
+  detail: "",
+};
 
 const setConnectionStatus = (connected, detail) => {
   connectionStatus.classList.toggle("connected", connected);
@@ -39,18 +43,86 @@ const setConnectionStatus = (connected, detail) => {
 };
 
 const callTool = async (tool, args) => {
-  if (!mcpClient || typeof mcpClient.callTool !== "function") {
-    setConnectionStatus(false, "No MCP client detected.");
-    throw new Error("No MCP client detected in browser.");
+  if (mcpClient && typeof mcpClient.callTool === "function") {
+    setConnectionStatus(true, "Connected via MCP host");
+    const result = await mcpClient.callTool({ name: tool, arguments: args });
+    const payload = result?.content?.[0]?.text;
+    if (!payload) {
+      return {};
+    }
+    return JSON.parse(payload);
   }
 
-  setConnectionStatus(true, "Connected");
-  const result = await mcpClient.callTool({ name: tool, arguments: args });
-  const payload = result?.content?.[0]?.text;
-  if (!payload) {
-    return {};
+  return callLocalBridge(tool, args);
+};
+
+const callLocalBridge = async (tool, args) => {
+  const map = {
+    "habits.list": {
+      method: "GET",
+      path: "/api/habits",
+      query: ["date", "category"],
+    },
+    "habits.create": { method: "POST", path: "/api/habits" },
+    "habits.update": { method: "PUT", path: "/api/habits/:id" },
+    "habits.delete": { method: "DELETE", path: "/api/habits/:id" },
+    "events.list": {
+      method: "GET",
+      path: "/api/events",
+      query: ["startDate", "endDate"],
+    },
+    "events.create": { method: "POST", path: "/api/events" },
+    "events.update": { method: "PUT", path: "/api/events/:id" },
+    "events.delete": { method: "DELETE", path: "/api/events/:id" },
+  };
+
+  const config = map[tool];
+  if (!config) {
+    throw new Error(`Unsupported tool: ${tool}`);
   }
-  return JSON.parse(payload);
+
+  let url = config.path;
+  if (url.includes(":id")) {
+    url = url.replace(":id", encodeURIComponent(args.id));
+  }
+
+  if (config.query) {
+    const params = new URLSearchParams();
+    config.query.forEach((key) => {
+      if (args[key]) {
+        params.set(key, args[key]);
+      }
+    });
+    const query = params.toString();
+    if (query) {
+      url += `?${query}`;
+    }
+  }
+
+  const options = { method: config.method };
+  if (config.method !== "GET" && config.method !== "DELETE") {
+    const payload = { ...args };
+    delete payload.id;
+    options.headers = { "Content-Type": "application/json" };
+    options.body = JSON.stringify(payload);
+  }
+
+  try {
+    const response = await fetch(url, options);
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || "Bridge request failed.");
+    }
+    setConnectionStatus(true, "Connected via local bridge");
+    bridgeStatus.mode = "bridge";
+    bridgeStatus.detail = "Connected";
+    return data;
+  } catch (error) {
+    setConnectionStatus(false, "Local bridge unavailable");
+    bridgeStatus.mode = "error";
+    bridgeStatus.detail = error.message;
+    throw error;
+  }
 };
 
 const safeJsonParse = (value) => {
@@ -333,9 +405,9 @@ tabs.forEach((tab) => {
 
 const initialize = () => {
   if (!mcpClient || typeof mcpClient.callTool !== "function") {
-    setConnectionStatus(false, "Waiting for MCP client.");
+    setConnectionStatus(false, "Waiting for MCP host or local bridge...");
   } else {
-    setConnectionStatus(true, "Connected");
+    setConnectionStatus(true, "Connected via MCP host");
   }
 
   habitForm.date.value = habitDate.value;
