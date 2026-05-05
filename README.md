@@ -8,10 +8,7 @@ The server runs over stdio and is intended to be launched by an MCP client.
 Node.js 18+ is required.
 
 ## Frontend
-1. Open `http://localhost:5173` in Firefox (or any browser).
-
-If port 5173 is busy, run with a different port, e.g. `PORT=5174 node server.js`
-and open `http://localhost:5174`.
+1. Open `http://localhost:5173` in VSCode by going to "ports" and clicking "preview in editor" on port 5173. (or use any other MCP-enabled browser).
 
 The frontend will use the local bridge (HTTP API) automatically when no
 MCP client is injected. If you run inside an MCP-enabled host, it will use
