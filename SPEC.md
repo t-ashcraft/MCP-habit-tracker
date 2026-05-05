@@ -28,7 +28,11 @@ A local-first habit tracker and calendar app that runs in a web browser and stor
   - category (food|fitness|sleep|studying)
   - date (YYYY-MM-DD)
   - notes (optional)
-  - metrics (optional object per category)
+  - metrics (category-specific object)
+    - food: { calories, protein, fat, carbs }
+    - fitness: { exercises: [{ name, weight, reps }] }
+    - sleep: { startTime, endTime }
+    - studying: { classes: [{ name, startTime, endTime }] }
 - CalendarEvent:
   - id
   - title
@@ -48,6 +52,7 @@ A local-first habit tracker and calendar app that runs in a web browser and stor
   - Habits: categorized input and daily log view.
   - Calendar: day/week view with event list and create/edit modal.
 - Simple navigation between Habits and Calendar.
+- Habit metrics inputs are preset per category (no JSON input).
 
 ## MCP Server Requirements
 - Extend the existing MCP server with tools for:

@@ -29,6 +29,11 @@ This task list is derived from SPEC.md and ARCH.md.
   - render daily habits
   - render calendar events
   - handle create/edit/delete forms
+- Replace freeform metrics JSON with preset category inputs:
+  - food: calories, protein, fat, carbs
+  - fitness: add/remove exercise rows (name, weight, reps)
+  - sleep: start/end time
+  - studying: add/remove class rows (name, start/end time)
 
 ## Local Hosting
 - Add static file server for public/.

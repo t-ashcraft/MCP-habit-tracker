@@ -53,14 +53,61 @@
                   Notes
                   <textarea name="notes" rows="3" placeholder="How did it go?"></textarea>
                 </label>
-                <label>
-                  Metrics (JSON)
-                  <textarea
-                    name="metrics"
-                    rows="2"
-                    placeholder='{"calories": 450}'
-                  ></textarea>
-                </label>
+                <div class="metric-group active" data-category="food" id="foodMetrics">
+                  <h3 class="metric-title">Food metrics</h3>
+                  <div class="row">
+                    <label>
+                      Calories
+                      <input type="number" name="calories" min="0" step="1" />
+                    </label>
+                    <label>
+                      Protein (g)
+                      <input type="number" name="protein" min="0" step="1" />
+                    </label>
+                    <label>
+                      Fat (g)
+                      <input type="number" name="fat" min="0" step="1" />
+                    </label>
+                    <label>
+                      Carbs (g)
+                      <input type="number" name="carbs" min="0" step="1" />
+                    </label>
+                  </div>
+                </div>
+
+                <div class="metric-group" data-category="fitness" id="fitnessMetrics">
+                  <div class="metric-header">
+                    <h3 class="metric-title">Exercises</h3>
+                    <button type="button" class="ghost small" id="addExercise">
+                      Add exercise
+                    </button>
+                  </div>
+                  <div class="metric-list" id="exerciseList"></div>
+                </div>
+
+                <div class="metric-group" data-category="sleep" id="sleepMetrics">
+                  <h3 class="metric-title">Sleep window</h3>
+                  <div class="row">
+                    <label>
+                      Start time
+                      <input type="time" name="sleepStart" />
+                    </label>
+                    <label>
+                      End time
+                      <input type="time" name="sleepEnd" />
+                    </label>
+                  </div>
+                </div>
+
+                <div class="metric-group" data-category="studying" id="studyMetrics">
+                  <div class="metric-header">
+                    <h3 class="metric-title">Classes</h3>
+                    <button type="button" class="ghost small" id="addClass">
+                      Add class
+                    </button>
+                  </div>
+                  <div class="metric-list" id="classList"></div>
+                </div>
                 <div class="form-actions">
                   <button type="submit" class="primary">Save habit</button>
                   <button type="button" class="ghost" id="habitCancel" hidden>

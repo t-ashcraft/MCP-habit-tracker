@@ -7,6 +7,14 @@ const habitList = document.getElementById("habitList");
 const habitDate = document.getElementById("habitDate");
 const habitCategory = document.getElementById("habitCategory");
 const habitRefresh = document.getElementById("habitRefresh");
+const foodMetrics = document.getElementById("foodMetrics");
+const fitnessMetrics = document.getElementById("fitnessMetrics");
+const sleepMetrics = document.getElementById("sleepMetrics");
+const studyMetrics = document.getElementById("studyMetrics");
+const exerciseList = document.getElementById("exerciseList");
+const classList = document.getElementById("classList");
+const addExercise = document.getElementById("addExercise");
+const addClass = document.getElementById("addClass");
 
 const eventForm = document.getElementById("eventForm");
 const eventCancel = document.getElementById("eventCancel");
@@ -35,6 +43,13 @@ const mcpClient = window.mcpClient || window.mcp;
 const bridgeStatus = {
   mode: "unknown",
   detail: "",
+};
+
+const metricGroups = {
+  food: foodMetrics,
+  fitness: fitnessMetrics,
+  sleep: sleepMetrics,
+  studying: studyMetrics,
 };
 
 const setConnectionStatus = (connected, detail) => {
@@ -125,16 +140,288 @@ const callLocalBridge = async (tool, args) => {
   }
 };
 
-const safeJsonParse = (value) => {
-  if (!value) {
-    return {};
+const parseNumber = (value) => {
+  if (value === "" || value === null || value === undefined) {
+    return null;
+  }
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
+const stripEmpty = (obj) => {
+  const cleaned = {};
+  Object.entries(obj).forEach(([key, value]) => {
+    if (value !== null && value !== "" && value !== undefined) {
+      cleaned[key] = value;
+    }
+  });
+  return cleaned;
+};
+
+const clearMetricLists = () => {
+  exerciseList.innerHTML = "";
+  classList.innerHTML = "";
+};
+
+const buildExerciseRow = (exercise = {}) => {
+  const row = document.createElement("div");
+  row.className = "metric-row";
+
+  const nameLabel = document.createElement("label");
+  nameLabel.textContent = "Exercise";
+  const nameInput = document.createElement("input");
+  nameInput.type = "text";
+  nameInput.className = "exercise-name";
+  nameInput.placeholder = "Bench press";
+  nameInput.value = exercise.name || "";
+  nameLabel.appendChild(nameInput);
+
+  const weightLabel = document.createElement("label");
+  weightLabel.textContent = "Weight";
+  const weightInput = document.createElement("input");
+  weightInput.type = "number";
+  weightInput.min = "0";
+  weightInput.step = "1";
+  weightInput.className = "exercise-weight";
+  weightInput.placeholder = "135";
+  weightInput.value = exercise.weight ?? "";
+  weightLabel.appendChild(weightInput);
+
+  const repsLabel = document.createElement("label");
+  repsLabel.textContent = "Reps";
+  const repsInput = document.createElement("input");
+  repsInput.type = "number";
+  repsInput.min = "0";
+  repsInput.step = "1";
+  repsInput.className = "exercise-reps";
+  repsInput.placeholder = "8";
+  repsInput.value = exercise.reps ?? "";
+  repsLabel.appendChild(repsInput);
+
+  const removeButton = document.createElement("button");
+  removeButton.type = "button";
+  removeButton.className = "ghost small remove";
+  removeButton.textContent = "Remove";
+  removeButton.addEventListener("click", () => {
+    row.remove();
+  });
+
+  row.append(nameLabel, weightLabel, repsLabel, removeButton);
+  return row;
+};
+
+const buildClassRow = (entry = {}) => {
+  const row = document.createElement("div");
+  row.className = "metric-row";
+
+  const nameLabel = document.createElement("label");
+  nameLabel.textContent = "Class";
+  const nameInput = document.createElement("input");
+  nameInput.type = "text";
+  nameInput.className = "class-name";
+  nameInput.placeholder = "Calculus";
+  nameInput.value = entry.name || "";
+  nameLabel.appendChild(nameInput);
+
+  const startLabel = document.createElement("label");
+  startLabel.textContent = "Start time";
+  const startInput = document.createElement("input");
+  startInput.type = "time";
+  startInput.className = "class-start";
+  startInput.value = entry.startTime || "";
+  startLabel.appendChild(startInput);
+
+  const endLabel = document.createElement("label");
+  endLabel.textContent = "End time";
+  const endInput = document.createElement("input");
+  endInput.type = "time";
+  endInput.className = "class-end";
+  endInput.value = entry.endTime || "";
+  endLabel.appendChild(endInput);
+
+  const removeButton = document.createElement("button");
+  removeButton.type = "button";
+  removeButton.className = "ghost small remove";
+  removeButton.textContent = "Remove";
+  removeButton.addEventListener("click", () => {
+    row.remove();
+  });
+
+  row.append(nameLabel, startLabel, endLabel, removeButton);
+  return row;
+};
+
+const ensureMetricRows = (category) => {
+  if (category === "fitness" && exerciseList.children.length === 0) {
+    exerciseList.appendChild(buildExerciseRow());
+  }
+  if (category === "studying" && classList.children.length === 0) {
+    classList.appendChild(buildClassRow());
+  }
+};
+
+const setMetricVisibility = (category) => {
+  Object.entries(metricGroups).forEach(([key, group]) => {
+    group.classList.toggle("active", key === category);
+  });
+  ensureMetricRows(category);
+};
+
+const readMetrics = () => {
+  const category = habitForm.category.value;
+
+  if (category === "food") {
+    const metrics = stripEmpty({
+      calories: parseNumber(habitForm.calories.value),
+      protein: parseNumber(habitForm.protein.value),
+      fat: parseNumber(habitForm.fat.value),
+      carbs: parseNumber(habitForm.carbs.value),
+    });
+    return metrics;
   }
 
-  try {
-    return JSON.parse(value);
-  } catch (error) {
-    throw new Error("Metrics must be valid JSON.");
+  if (category === "sleep") {
+    const metrics = stripEmpty({
+      startTime: habitForm.sleepStart.value,
+      endTime: habitForm.sleepEnd.value,
+    });
+    return metrics;
   }
+
+  if (category === "fitness") {
+    const exercises = Array.from(exerciseList.querySelectorAll(".metric-row"))
+      .map((row) => {
+        const name = row.querySelector(".exercise-name").value.trim();
+        const weight = parseNumber(row.querySelector(".exercise-weight").value);
+        const reps = parseNumber(row.querySelector(".exercise-reps").value);
+        if (!name) {
+          return null;
+        }
+        return stripEmpty({ name, weight, reps });
+      })
+      .filter(Boolean);
+
+    return exercises.length ? { exercises } : {};
+  }
+
+  if (category === "studying") {
+    const classes = Array.from(classList.querySelectorAll(".metric-row"))
+      .map((row) => {
+        const name = row.querySelector(".class-name").value.trim();
+        const startTime = row.querySelector(".class-start").value;
+        const endTime = row.querySelector(".class-end").value;
+        if (!name) {
+          return null;
+        }
+        return stripEmpty({ name, startTime, endTime });
+      })
+      .filter(Boolean);
+
+    return classes.length ? { classes } : {};
+  }
+
+  return {};
+};
+
+const applyMetrics = (category, metrics = {}) => {
+  clearMetricLists();
+  setMetricVisibility(category);
+
+  if (category === "food") {
+    habitForm.calories.value = metrics.calories ?? "";
+    habitForm.protein.value = metrics.protein ?? "";
+    habitForm.fat.value = metrics.fat ?? "";
+    habitForm.carbs.value = metrics.carbs ?? "";
+  }
+
+  if (category === "sleep") {
+    habitForm.sleepStart.value = metrics.startTime ?? "";
+    habitForm.sleepEnd.value = metrics.endTime ?? "";
+  }
+
+  if (category === "fitness") {
+    const exercises = Array.isArray(metrics.exercises) ? metrics.exercises : [];
+    if (exercises.length === 0) {
+      ensureMetricRows("fitness");
+      return;
+    }
+    exercises.forEach((exercise) => {
+      exerciseList.appendChild(buildExerciseRow(exercise));
+    });
+  }
+
+  if (category === "studying") {
+    const classes = Array.isArray(metrics.classes) ? metrics.classes : [];
+    if (classes.length === 0) {
+      ensureMetricRows("studying");
+      return;
+    }
+    classes.forEach((entry) => {
+      classList.appendChild(buildClassRow(entry));
+    });
+  }
+};
+
+const formatHabitMetrics = (habit) => {
+  const metrics = habit.metrics || {};
+  if (habit.category === "food") {
+    const parts = [];
+    if (metrics.calories !== undefined) {
+      parts.push(`${metrics.calories} cal`);
+    }
+    if (metrics.protein !== undefined) {
+      parts.push(`${metrics.protein}g protein`);
+    }
+    if (metrics.fat !== undefined) {
+      parts.push(`${metrics.fat}g fat`);
+    }
+    if (metrics.carbs !== undefined) {
+      parts.push(`${metrics.carbs}g carbs`);
+    }
+    return parts.join(" | ");
+  }
+
+  if (habit.category === "sleep") {
+    if (metrics.startTime || metrics.endTime) {
+      return `${metrics.startTime || ""} - ${metrics.endTime || ""}`.trim();
+    }
+  }
+
+  if (habit.category === "fitness" && Array.isArray(metrics.exercises)) {
+    return metrics.exercises
+      .map((exercise) => {
+        if (!exercise) {
+          return "";
+        }
+        const details = [];
+        if (exercise.weight !== undefined) {
+          details.push(`${exercise.weight} lb`);
+        }
+        if (exercise.reps !== undefined) {
+          details.push(`${exercise.reps} reps`);
+        }
+        return details.length
+          ? `${exercise.name} (${details.join(", ")})`
+          : exercise.name;
+      })
+      .filter(Boolean)
+      .join(" | ");
+  }
+
+  if (habit.category === "studying" && Array.isArray(metrics.classes)) {
+    return metrics.classes
+      .map((entry) => {
+        if (!entry) {
+          return "";
+        }
+        const window = [entry.startTime, entry.endTime].filter(Boolean).join("-");
+        return window ? `${entry.name} (${window})` : entry.name;
+      })
+      .filter(Boolean)
+      .join(" | ");
+  }
+
+  return "";
 };
 
 const renderHabitList = (habits) => {
@@ -153,7 +440,12 @@ const renderHabitList = (habits) => {
 
     const meta = document.createElement("div");
     meta.className = "meta";
-    meta.textContent = habit.notes || "No notes";
+    const metricsSummary = formatHabitMetrics(habit);
+    if (habit.notes && metricsSummary) {
+      meta.textContent = `${habit.notes} | ${metricsSummary}`;
+    } else {
+      meta.textContent = habit.notes || metricsSummary || "No notes";
+    }
 
     const actions = document.createElement("div");
     actions.className = "list-actions";
@@ -250,6 +542,8 @@ const resetHabitForm = () => {
   habitForm.date.value = habitDate.value;
   habitForm.id.value = "";
   habitCancel.hidden = true;
+  clearMetricLists();
+  applyMetrics(habitForm.category.value, {});
 };
 
 const resetEventForm = () => {
@@ -265,9 +559,9 @@ const startHabitEdit = (habit) => {
   habitForm.category.value = habit.category;
   habitForm.date.value = habit.date;
   habitForm.notes.value = habit.notes || "";
-  habitForm.metrics.value = habit.metrics ? JSON.stringify(habit.metrics) : "";
   habitForm.id.value = habit.id;
   habitCancel.hidden = false;
+  applyMetrics(habit.category, habit.metrics || {});
 };
 
 const startEventEdit = (event) => {
@@ -312,7 +606,7 @@ habitForm.addEventListener("submit", async (event) => {
     category: habitForm.category.value,
     date: habitForm.date.value,
     notes: habitForm.notes.value.trim(),
-    metrics: safeJsonParse(habitForm.metrics.value.trim()),
+    metrics: readMetrics(),
   };
 
   try {
@@ -337,6 +631,14 @@ habitCancel.addEventListener("click", () => {
   resetHabitForm();
 });
 
+addExercise.addEventListener("click", () => {
+  exerciseList.appendChild(buildExerciseRow());
+});
+
+addClass.addEventListener("click", () => {
+  classList.appendChild(buildClassRow());
+});
+
 habitRefresh.addEventListener("click", () => {
   loadHabits();
 });
@@ -349,6 +651,11 @@ habitDate.addEventListener("change", () => {
 habitCategory.addEventListener("change", () => {
   habitForm.category.value = habitCategory.value || "food";
   loadHabits();
+});
+
+habitForm.category.addEventListener("change", () => {
+  clearMetricLists();
+  applyMetrics(habitForm.category.value, {});
 });
 
 eventForm.addEventListener("submit", async (event) => {
@@ -412,6 +719,7 @@ const initialize = () => {
 
   habitForm.date.value = habitDate.value;
   eventForm.date.value = eventStart.value;
+  applyMetrics(habitForm.category.value, {});
 
   loadHabits();
   loadEvents();
