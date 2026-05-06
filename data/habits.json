@@ -1,0 +1,94 @@
+[
+  {
+    "id": "c0aee22a-b56a-4d73-9d8a-9203e3622f04",
+    "category": "food",
+    "date": "2026-05-05",
+    "notes": "Chicken x2",
+    "metrics": {
+      "calories": 300,
+      "protein": 40,
+      "fat": 18,
+      "carbs": 0
+    }
+  },
+  {
+    "id": "5d405a74-7862-476c-a8c9-948fa1f2cff8",
+    "category": "fitness",
+    "date": "2026-05-05",
+    "notes": "Leg day",
+    "metrics": {
+      "exercises": [
+        {
+          "name": "Leg press",
+          "weight": 220,
+          "reps": 10
+        },
+        {
+          "name": "Squat",
+          "weight": 225,
+          "reps": 12
+        },
+        {
+          "name": "Ham Curl",
+          "weight": 200,
+          "reps": 8
+        }
+      ]
+    }
+  },
+  {
+    "id": "9849dadd-7f6f-404d-9ee1-908ceacc73ae",
+    "category": "sleep",
+    "date": "2026-05-05",
+    "notes": "",
+    "metrics": {
+      "startTime": "23:30",
+      "endTime": "08:00"
+    }
+  },
+  {
+    "id": "285543d3-054f-46fe-862d-58df2ec3ae0d",
+    "category": "studying",
+    "date": "2026-05-05",
+    "notes": "",
+    "metrics": {
+      "classes": [
+        {
+          "name": "CS290",
+          "startTime": "10:00",
+          "endTime": "11:30"
+        },
+        {
+          "name": "CS373",
+          "startTime": "12:30",
+          "endTime": "15:00"
+        }
+      ]
+    }
+  },
+  {
+    "id": "5cea416c-4b15-4777-a1c5-f9c2a381ba7b",
+    "category": "sleep",
+    "date": "2026-05-06",
+    "notes": "",
+    "metrics": {
+      "startTime": "22:30",
+      "endTime": "07:00"
+    }
+  },
+  {
+    "id": "87ecfc34-d9e2-480f-9b7b-3de11434e6d5",
+    "category": "studying",
+    "date": "2026-05-06",
+    "notes": "",
+    "metrics": {
+      "classes": [
+        {
+          "name": "Calculus",
+          "startTime": "18:00",
+          "endTime": "19:00"
+        }
+      ]
+    }
+  }
+]

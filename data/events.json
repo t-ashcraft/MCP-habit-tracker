@@ -1,0 +1,18 @@
+[
+  {
+    "id": "ac9592b7-dccb-4986-8315-0b47c983d272",
+    "title": "Gym session",
+    "date": "2026-05-06",
+    "startTime": "10:00",
+    "endTime": "11:00",
+    "notes": "Arm + Shoulder Day"
+  },
+  {
+    "id": "08aa5217-547d-4313-828e-57e0b203803e",
+    "title": "CS Exam",
+    "date": "2026-05-07",
+    "startTime": "15:30",
+    "endTime": "17:30",
+    "notes": "CS352 - Compilers"
+  }
+]
