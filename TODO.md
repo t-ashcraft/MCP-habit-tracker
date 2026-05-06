@@ -20,6 +20,8 @@ This task list is derived from SPEC.md and ARCH.md.
   - update
   - delete
 - Add basic validation for date/time formats.
+- Add MCP Q&A tool for habit/event questions.
+- Add local bridge endpoint for Q&A.
 
 ## Frontend
 - Create public/index.html layout (Habits + Calendar sections).
@@ -34,6 +36,7 @@ This task list is derived from SPEC.md and ARCH.md.
   - fitness: add/remove exercise rows (name, weight, reps)
   - sleep: start/end time
   - studying: add/remove class rows (name, start/end time)
+- Add a bottom Q&A bar to ask about habits/events and render succinct answers.
 
 ## Local Hosting
 - Add static file server for public/.

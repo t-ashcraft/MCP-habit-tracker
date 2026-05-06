@@ -197,6 +197,21 @@
           </div>
         </section>
       </main>
+
+      <section class="ask-bar" aria-label="Ask about your habits and events">
+        <form id="qaForm" class="qa-form">
+          <input
+            type="text"
+            id="qaInput"
+            name="question"
+            placeholder="Ask: what did I eat yesterday?"
+            autocomplete="off"
+            required
+          />
+          <button type="submit" class="primary">Ask</button>
+        </form>
+        <p class="qa-answer" id="qaAnswer">Ask a question to get a quick summary.</p>
+      </section>
     </div>
 
     <script src="app.js"></script>

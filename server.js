@@ -250,6 +250,161 @@ const deleteEvent = async ({ id }) => {
   return { success: true };
 };
 
+const formatDate = (date) => date.toISOString().slice(0, 10);
+
+const extractDateFromQuestion = (question) => {
+  const match = question.match(/\d{4}-\d{2}-\d{2}/);
+  if (match) {
+    return match[0];
+  }
+
+  const today = new Date();
+  if (question.includes("yesterday")) {
+    today.setDate(today.getDate() - 1);
+    return formatDate(today);
+  }
+  if (question.includes("tomorrow")) {
+    today.setDate(today.getDate() + 1);
+    return formatDate(today);
+  }
+  if (question.includes("today")) {
+    return formatDate(today);
+  }
+
+  return null;
+};
+
+const detectQuestionTarget = (question) => {
+  if (/(plan|planned|schedule|event|calendar|appointment)/.test(question)) {
+    return "events";
+  }
+  if (/(eat|ate|food|calorie|protein|carb|fat)/.test(question)) {
+    return "food";
+  }
+  if (/(sleep|slept|bed)/.test(question)) {
+    return "sleep";
+  }
+  if (/(study|studied|class|lecture)/.test(question)) {
+    return "studying";
+  }
+  if (/(workout|exercise|fitness|lift|gym)/.test(question)) {
+    return "fitness";
+  }
+  return "summary";
+};
+
+const formatFoodSummary = (habits, date) => {
+  if (!habits.length) {
+    return `No food logged for ${date}.`;
+  }
+
+  const totals = habits.reduce(
+    (acc, entry) => {
+      const metrics = entry.metrics || {};
+      acc.calories += Number(metrics.calories || 0);
+      acc.protein += Number(metrics.protein || 0);
+      acc.fat += Number(metrics.fat || 0);
+      acc.carbs += Number(metrics.carbs || 0);
+      return acc;
+    },
+    { calories: 0, protein: 0, fat: 0, carbs: 0 }
+  );
+
+  const summary = [
+    `${totals.calories} cal`,
+    `${totals.protein}g protein`,
+    `${totals.fat}g fat`,
+    `${totals.carbs}g carbs`,
+  ].join(", ");
+
+  return `Food for ${date}: ${summary}.`;
+};
+
+const formatSleepSummary = (habits, date) => {
+  if (!habits.length) {
+    return `No sleep logged for ${date}.`;
+  }
+  const latest = habits[habits.length - 1];
+  const metrics = latest.metrics || {};
+  if (metrics.startTime || metrics.endTime) {
+    return `Sleep on ${date}: ${metrics.startTime || ""} - ${
+      metrics.endTime || ""
+    }.`.trim();
+  }
+  return `Sleep logged for ${date}.`;
+};
+
+const formatFitnessSummary = (habits, date) => {
+  if (!habits.length) {
+    return `No workouts logged for ${date}.`;
+  }
+  const exercises = habits
+    .flatMap((entry) => entry.metrics?.exercises || [])
+    .filter((exercise) => exercise && exercise.name);
+  if (!exercises.length) {
+    return `Workouts logged for ${date}.`;
+  }
+  const names = exercises.map((exercise) => exercise.name).join(", ");
+  return `Workouts on ${date}: ${names}.`;
+};
+
+const formatStudySummary = (habits, date) => {
+  if (!habits.length) {
+    return `No studying logged for ${date}.`;
+  }
+  const classes = habits
+    .flatMap((entry) => entry.metrics?.classes || [])
+    .filter((entry) => entry && entry.name);
+  if (!classes.length) {
+    return `Studying logged for ${date}.`;
+  }
+  const names = classes.map((entry) => entry.name).join(", ");
+  return `Studying on ${date}: ${names}.`;
+};
+
+const formatEventSummary = (events, date) => {
+  if (!events.length) {
+    return `No events planned for ${date}.`;
+  }
+  const summary = events
+    .map((event) => `${event.title} (${event.startTime}-${event.endTime})`)
+    .join(" | ");
+  return `Events on ${date}: ${summary}.`;
+};
+
+const answerQuestion = async (question) => {
+  const normalized = question.toLowerCase();
+  const target = detectQuestionTarget(normalized);
+  const date = extractDateFromQuestion(normalized) || formatDate(new Date());
+
+  if (target === "events") {
+    const { events } = await listEvents({ startDate: date, endDate: date });
+    return { answer: formatEventSummary(events, date) };
+  }
+
+  if (target === "summary") {
+    const { habits } = await listHabits({ date });
+    const { events } = await listEvents({ startDate: date, endDate: date });
+    return {
+      answer: `For ${date}, you logged ${habits.length} habit entries and have ${events.length} event(s).`,
+    };
+  }
+
+  const { habits } = await listHabits({ date, category: target });
+  switch (target) {
+    case "food":
+      return { answer: formatFoodSummary(habits, date) };
+    case "sleep":
+      return { answer: formatSleepSummary(habits, date) };
+    case "fitness":
+      return { answer: formatFitnessSummary(habits, date) };
+    case "studying":
+      return { answer: formatStudySummary(habits, date) };
+    default:
+      return { answer: "I could not match that question to your habits or events." };
+  }
+};
+
 server.tool(
   "habits.list",
   "List habit entries by date or category",
@@ -367,6 +522,18 @@ server.tool(
   },
   async ({ id }) => {
     const result = await deleteEvent({ id });
+    return toTextResponse(result);
+  }
+);
+
+server.tool(
+  "qa.ask",
+  "Answer a question about habits or events",
+  {
+    question: z.string(),
+  },
+  async ({ question }) => {
+    const result = await answerQuestion(question);
     return toTextResponse(result);
   }
 );
@@ -514,6 +681,18 @@ const handleApiRequest = async (req, res, url) => {
     const id = url.pathname.split("/").pop();
     const result = await deleteEvent({ id });
     sendJson(res, result.error ? 404 : 200, result);
+    return true;
+  }
+
+  if (url.pathname === "/api/qa" && req.method === "POST") {
+    const body = await readRequestBody(req);
+    const question = String(body.question || "").trim();
+    if (!question) {
+      sendJson(res, 400, { error: "Question is required." });
+      return true;
+    }
+    const result = await answerQuestion(question);
+    sendJson(res, 200, result);
     return true;
   }
 

@@ -22,6 +22,9 @@ const eventList = document.getElementById("eventList");
 const eventStart = document.getElementById("eventStart");
 const eventEnd = document.getElementById("eventEnd");
 const eventRefresh = document.getElementById("eventRefresh");
+const qaForm = document.getElementById("qaForm");
+const qaInput = document.getElementById("qaInput");
+const qaAnswer = document.getElementById("qaAnswer");
 
 const tabs = Array.from(document.querySelectorAll(".tab"));
 const panels = Array.from(document.querySelectorAll(".panel"));
@@ -89,6 +92,7 @@ const callLocalBridge = async (tool, args) => {
     "events.create": { method: "POST", path: "/api/events" },
     "events.update": { method: "PUT", path: "/api/events/:id" },
     "events.delete": { method: "DELETE", path: "/api/events/:id" },
+    "qa.ask": { method: "POST", path: "/api/qa" },
   };
 
   const config = map[tool];
@@ -656,6 +660,22 @@ habitCategory.addEventListener("change", () => {
 habitForm.category.addEventListener("change", () => {
   clearMetricLists();
   applyMetrics(habitForm.category.value, {});
+});
+
+qaForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const question = qaInput.value.trim();
+  if (!question) {
+    return;
+  }
+
+  qaAnswer.textContent = "Thinking...";
+  try {
+    const result = await callTool("qa.ask", { question });
+    qaAnswer.textContent = result.answer || "No response.";
+  } catch (error) {
+    qaAnswer.textContent = error.message || "Unable to answer that question.";
+  }
 });
 
 eventForm.addEventListener("submit", async (event) => {

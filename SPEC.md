@@ -21,6 +21,7 @@ A local-first habit tracker and calendar app that runs in a web browser and stor
 - As a user, I can add a calendar event with a title, date, start time, and end time.
 - As a user, I can edit or delete habit entries and calendar events.
 - As a user, I can use the app offline because it stores data locally.
+- As a user, I can ask natural questions about my habits and events in a bottom bar.
 
 ## Data Model (Conceptual)
 - HabitEntry:
@@ -53,6 +54,7 @@ A local-first habit tracker and calendar app that runs in a web browser and stor
   - Calendar: day/week view with event list and create/edit modal.
 - Simple navigation between Habits and Calendar.
 - Habit metrics inputs are preset per category (no JSON input).
+- A bottom Q&A bar lets users ask about recent habits or upcoming events.
 
 ## MCP Server Requirements
 - Extend the existing MCP server with tools for:
@@ -60,6 +62,7 @@ A local-first habit tracker and calendar app that runs in a web browser and stor
   - Creating/updating/deleting habit entries.
   - Listing calendar events by date range.
   - Creating/updating/deleting calendar events.
+- Add a tool that accepts a question and returns a succinct answer based on stored habits/events.
 - File-backed storage on the local filesystem.
 
 ## References

@@ -259,6 +259,34 @@ button.ghost.small {
   margin-bottom: 16px;
 }
 
+.ask-bar {
+  position: sticky;
+  bottom: 20px;
+  margin-top: 28px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 12px;
+}
+
+.qa-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+}
+
+.qa-form input {
+  width: 100%;
+}
+
+.qa-answer {
+  margin: 0;
+  color: var(--muted);
+}
+
 .list {
   list-style: none;
   padding: 0;
